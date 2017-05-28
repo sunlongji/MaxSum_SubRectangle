@@ -1,0 +1,96 @@
+//2D Kadane algorithm to find the rectangle with the maximum sum;
+import java.util.*;
+
+public class Solution {
+	public int maxSum(int[][] matrix){
+		int m=matrix.length, n=matrix[0].length;
+		int l=0, r=0, u=0, d=0, res=Integer.MIN_VALUE;
+		for(int left=0;left<n;left++){
+			int[] sum= new int[m];
+			for(int right=left;right<n;right++){
+				for(int i=0;i<m;i++){
+					sum[i]+=matrix[i][right];
+				}
+				//1D Kadane's algorithm;
+				int curS=0, curE=0, S=0, E=0;
+				int cur=sum[0], max=sum[0];
+				for(int k=1;k<m;k++){
+					//if including the prefix cur is better, change the curE;
+					if(cur+sum[k]>sum[k]){
+					   curE=k;
+					   cur=cur+sum[k];
+					}else{
+						//if the prefix is not included, update curS and curE;
+					   curS=k;
+					   curE=k;
+					   cur=sum[k];
+					}
+					//if cur is larger than max, update S and E;
+					if(cur>max){
+						S=curS;
+						E=curE;
+						max=cur;
+					}
+				}
+				//if the current max is larger than res, update res;
+				if(max>res){
+					res=max;
+					l=left;
+					r=right;
+					u=S;
+					d=E;
+				}
+			}
+		}
+		int[] pos={l,r,u,d};
+		String str=Arrays.toString(pos);
+		System.out.println(str);
+		return res;
+	}
+	
+	public int maxSumSubmatrix(int[][] matrix, int k) {
+	    //2D Kadane's algorithm + 1D maxSum problem with sum limit k
+	    //2D subarray sum solution
+	    
+	    //boundary check
+	    if(matrix.length == 0) return 0;
+	    
+	    int m = matrix.length, n = matrix[0].length;
+	    int result = Integer.MIN_VALUE;
+	    
+	    //outer loop should use smaller axis
+	    //now we assume we have more rows than cols, therefore outer loop will be based on cols 
+	    for(int left = 0; left < n; left++){
+	        //array that accumulate sums for each row from left to right 
+	        int[] sums = new int[m];
+	        for(int right = left; right < n; right++){
+	            //update sums[] to include values in curr right col
+	            for(int i = 0; i < m; i++){
+	                sums[i] += matrix[i][right];
+	            }
+	            
+	            //we use TreeSet to help us find the rectangle with maxSum <= k with O(logN) time
+	            TreeSet<Integer> set = new TreeSet<Integer>();
+	            //add 0 to cover the single row case
+	            set.add(0);
+	            int currSum = 0;
+	            
+	            for(int sum : sums){
+	                currSum += sum;
+	                //we use sum subtraction (curSum - sum) to get the subarray with sum <= k
+	                //therefore we need to look for the smallest sum >= currSum - k
+	                Integer num = set.ceiling(currSum - k);
+	                if(num != null) result = Math.max(result, currSum - num );
+	                set.add(currSum);
+	            }
+	        }
+	    }
+	    
+	    return result;
+	}
+	public static void main(String[] args){
+		int[][] matrix={{2,1,-3,-4,5},{0,6,3,4,1},{2,-2,-1,4,-5},{-3,3,1,0,3}};
+		int res=new Solution().maxSum(matrix);
+		System.out.println(res);
+	}
+}
